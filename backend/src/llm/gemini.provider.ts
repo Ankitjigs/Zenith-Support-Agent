@@ -1,7 +1,7 @@
 import { GoogleGenAI } from "@google/genai";
-import { SYSTEM_PROMPT } from "../config/knowledge-base";
-import { MAX_CONTEXT_MESSAGES } from "../utils/validation";
-import { ConversationHistory } from "../types/conversation.types";
+import { SYSTEM_PROMPT } from "../config/knowledge-base.js";
+import { MAX_CONTEXT_MESSAGES } from "../utils/validation.js";
+import { ConversationHistory } from "../types/conversation.types.js";
 
 export class GeminiProvider {
   private modelName: string;

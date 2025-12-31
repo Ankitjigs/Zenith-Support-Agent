@@ -1,6 +1,6 @@
-import conversationRepository from "../repositories/conversation.repository";
-import type { Message } from "../models/database";
-import { ConversationHistory } from "../types/conversation.types";
+import conversationRepository from "../repositories/conversation.repository.js";
+import type { Message } from "../models/database.js";
+import { ConversationHistory } from "../types/conversation.types.js";
 
 export class ConversationService {
   async createConversation(): Promise<string> {
@@ -42,21 +42,23 @@ export class ConversationService {
     );
   }
 
-  async getMessageCount(conversationId:string): Promise<number>{
+  async getMessageCount(conversationId: string): Promise<number> {
     return await conversationRepository.getMessageCount(conversationId);
   }
 
-  async getFormattedHistory(conversationId: string, limit: number = 10):Promise<ConversationHistory>{
-        const messages = await this.getConversationHistory(conversationId, limit);
-        
-        return messages.map((msg) => ({
-            role: msg.sender === 'user' ? 'user' : 'assistant',
-            content: msg.text,
-        }))
+  async getFormattedHistory(
+    conversationId: string,
+    limit: number = 10
+  ): Promise<ConversationHistory> {
+    const messages = await this.getConversationHistory(conversationId, limit);
+
+    return messages.map((msg) => ({
+      role: msg.sender === "user" ? "user" : "assistant",
+      content: msg.text,
+    }));
   }
 
-
-  async deleteOldConversation(daysOld:number = 30):Promise<number>{
+  async deleteOldConversation(daysOld: number = 30): Promise<number> {
     return await conversationRepository.deleteOlderThan(daysOld);
   }
 }

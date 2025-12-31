@@ -2,7 +2,7 @@ import { handle } from "hono/vercel";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
-import chatRoutes from "../src/routes/chat.routes";
+import chatRoutes from "../src/routes/chat.routes.js";
 
 // Initialize Hono App
 // Note: We use base path '/api' to match Vercel's folder structure routing preference

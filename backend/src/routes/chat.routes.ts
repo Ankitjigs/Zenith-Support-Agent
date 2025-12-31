@@ -1,11 +1,11 @@
 import { Hono } from "hono";
-import conversationService from "../services/conversation.service";
-import providerManager from "../llm/provider.manager";
+import conversationService from "../services/conversation.service.js";
+import providerManager from "../llm/provider.manager.js";
 import {
   validateMessage,
   validateSessionId,
   sanitizeInput,
-} from "../utils/validation";
+} from "../utils/validation.js";
 
 const chat = new Hono();
 

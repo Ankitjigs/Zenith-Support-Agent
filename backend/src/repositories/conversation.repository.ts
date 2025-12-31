@@ -1,5 +1,5 @@
-import prisma from "../models/database";
-import type { Message } from "../models/database";
+import prisma from "../models/database.js";
+import type { Message } from "../models/database.js";
 
 export class ConversationRepository {
   async create(id?: string): Promise<string> {
