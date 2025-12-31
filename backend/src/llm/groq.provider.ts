@@ -1,6 +1,7 @@
 import Groq from "groq-sdk";
 import { SYSTEM_PROMPT } from "../config/knowledge-base.js";
 import { MAX_CONTEXT_MESSAGES } from "../utils/validation.js";
+import { isServerless, withTimeout } from "../utils/timeout.js";
 import type {
   ConversationHistory,
   ChatMessage,
@@ -8,16 +9,29 @@ import type {
 
 export class GroqProvider {
   private maxTokens: number = 300;
-  private model: string = "openai/gpt-oss-120b";
+  private model: string = "openai/gpt-oss-120b"; // Faster model for better serverless performance
   private client: Groq | null = null;
 
+  /**
+   * Environment-aware client factory
+   * - Dev: Cached client (faster, reuses connections)
+   * - Serverless: Fresh client per call (prevents stale sockets)
+   */
   private getClient(): Groq {
-    if (!this.client) {
-      this.client = new Groq({
-        apiKey: process.env.GROQ_API_KEY,
-      });
+    if (!isServerless) {
+      // Development: reuse client
+      if (!this.client) {
+        this.client = new Groq({
+          apiKey: process.env.GROQ_API_KEY,
+        });
+      }
+      return this.client;
     }
-    return this.client;
+
+    // Serverless: always fresh
+    return new Groq({
+      apiKey: process.env.GROQ_API_KEY,
+    });
   }
 
   async generateReply(
@@ -33,12 +47,15 @@ export class GroqProvider {
         { role: "user", content: userMessage },
       ];
 
-      const completion = await this.getClient().chat.completions.create({
-        model: this.model,
-        messages: messages,
-        max_tokens: this.maxTokens,
-        temperature: 0.7,
-      });
+      // Environment-aware timeout (15s serverless, 60s dev)
+      const completion = await withTimeout(
+        this.getClient().chat.completions.create({
+          model: this.model,
+          messages: messages,
+          max_tokens: this.maxTokens,
+          temperature: 0.7,
+        })
+      );
 
       const reply = completion.choices[0]?.message.content;
 
@@ -49,6 +66,13 @@ export class GroqProvider {
       return reply.trim();
     } catch (error: any) {
       console.error("Groq API Error:", error);
+
+      if (error.message === "LLM_TIMEOUT") {
+        console.warn(
+          `Groq timeout (${isServerless ? "15s serverless" : "60s dev"})`
+        );
+        throw new Error("TIMEOUT");
+      }
 
       if (error.status === 429) {
         throw new Error("RATE_LIMIT");
@@ -68,11 +92,14 @@ export class GroqProvider {
 
   async testConnection(): Promise<boolean> {
     try {
-      const completion = await this.getClient().chat.completions.create({
-        model: this.model,
-        messages: [{ role: "user", content: "test" }],
-        max_tokens: 5,
-      });
+      const completion = await withTimeout(
+        this.getClient().chat.completions.create({
+          model: this.model,
+          messages: [{ role: "user", content: "test" }],
+          max_tokens: 5,
+        }),
+        10000 // Health check always 10s
+      );
       return !!completion.choices[0];
     } catch (error) {
       console.error("Groq connection test failed:", error);

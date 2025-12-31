@@ -1,6 +1,7 @@
 import { GoogleGenAI } from "@google/genai";
 import { SYSTEM_PROMPT } from "../config/knowledge-base.js";
 import { MAX_CONTEXT_MESSAGES } from "../utils/validation.js";
+import { isServerless, withTimeout } from "../utils/timeout.js";
 import { ConversationHistory } from "../types/conversation.types.js";
 
 export class GeminiProvider {
@@ -8,14 +9,25 @@ export class GeminiProvider {
   private client: GoogleGenAI | null = null;
 
   constructor() {
-    this.modelName = "gemma-2-27b";
+    this.modelName = "gemini-2.5-flash-lite";
   }
 
+  /**
+   * Environment-aware client factory
+   * - Dev: Cached client (faster, reuses connections)
+   *- Serverless: Fresh client per call (prevents stale sockets)
+   */
   private getClient(): GoogleGenAI {
-    if (!this.client) {
-      this.client = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+    if (!isServerless) {
+      // Development: reuse client
+      if (!this.client) {
+        this.client = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+      }
+      return this.client;
     }
-    return this.client;
+
+    // Serverless: always fresh
+    return new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
   }
 
   async generateReply(
@@ -36,14 +48,17 @@ export class GeminiProvider {
 
       const prompt = `${context}\n\nUser:${userMessage}\n\nAssistant:`;
 
-      const response = await client.models.generateContent({
-        model: this.modelName,
-        contents: [
-          {
-            parts: [{ text: prompt }],
-          },
-        ],
-      });
+      // Environment-aware timeout (15s serverless, 60s dev)
+      const response = await withTimeout(
+        client.models.generateContent({
+          model: this.modelName,
+          contents: [
+            {
+              parts: [{ text: prompt }],
+            },
+          ],
+        })
+      );
 
       const reply = response.candidates?.[0]?.content?.parts?.[0]?.text;
 
@@ -54,6 +69,13 @@ export class GeminiProvider {
       return reply.trim();
     } catch (error: any) {
       console.error("Gemini API Error:", error);
+
+      if (error.message === "LLM_TIMEOUT") {
+        console.warn(
+          `Gemini timeout (${isServerless ? "15s serverless" : "60s dev"})`
+        );
+        throw new Error("TIMEOUT");
+      }
 
       if (error.status === 429) {
         throw new Error(
@@ -73,14 +95,17 @@ export class GeminiProvider {
 
   async testConnection(): Promise<boolean> {
     try {
-      const response = await this.getClient().models.generateContent({
-        model: this.modelName,
-        contents: [
-          {
-            parts: [{ text: "test" }],
-          },
-        ],
-      });
+      const response = await withTimeout(
+        this.getClient().models.generateContent({
+          model: this.modelName,
+          contents: [
+            {
+              parts: [{ text: "test" }],
+            },
+          ],
+        }),
+        10000 // Health check always 10s
+      );
       return !!response.candidates?.[0]?.content?.parts?.[0]?.text;
     } catch (error) {
       console.error("Gemini connection test failed:", error);
