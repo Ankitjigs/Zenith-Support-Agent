@@ -3,7 +3,7 @@
 A robust, real-time customer support chat widget powered by a Node.js/TypeScript backend and a React frontend. The agent uses LLMs (Groq/Gemini) to provide contextual answers based on a defined knowledge base.
 
 ## 🌐 Live Demo & Deployment
-**[View Live Deployment Here](zenith-support-agent.vercel.app)**  
+**[View Live Deployment Here](https://zenith-support-agent.vercel.app)**  
 
 ## 📸 Screenshots
 <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/6ed0be14-b5dd-4f4e-b09d-c21b8cdd816e" />
@@ -42,7 +42,7 @@ cp .env.example .env
 
 # Setup Database
 npx prisma generate
-npx prisma push  # Or migrate dev
+npx prisma db push  # Or migrate dev
 
 # Run Server
 npm run dev
@@ -60,6 +60,37 @@ echo "VITE_API_BASE_URL=http://localhost:3000/api" > .env
 npm run dev
 ```
 Open [http://localhost:5173](http://localhost:5173) to view the chat widget.
+
+---
+
+## ☁️ Deploying to Vercel
+
+### Backend Deployment
+
+1. **Import** the backend folder as a new Vercel project
+2. **Set Environment Variables** in Vercel Dashboard → Settings → Environment Variables:
+   - `DATABASE_URL` = Your Supabase **Transaction pooler** URL (port 6543)
+   - `GROQ_API_KEY` = Your Groq API key
+   - `GEMINI_API_KEY` = Your Gemini API key
+   - `FRONTEND_URL` = Your frontend Vercel URL (e.g., `https://your-app.vercel.app`)
+
+3. **Push database schema** (run locally with production DATABASE_URL):
+   ```bash
+   cd backend
+   $env:DATABASE_URL="postgresql://...@pooler.supabase.com:6543/postgres"; npm run prisma:push
+   ```
+
+### Frontend Deployment
+
+1. **Import** the frontend folder as a new Vercel project
+2. **Set Environment Variable:**
+   - `VITE_API_BASE_URL` = Your backend Vercel URL + `/api` (e.g., `https://your-backend.vercel.app/api`)
+
+### Important Notes
+
+- **Supabase**: Use the **Transaction pooler** connection string (port `6543`), not the direct connection (port `5432`)
+- **SSL**: The backend is configured with `ssl: { rejectUnauthorized: false }` for Supabase
+- **Timeouts**: LLM calls have 15s timeout in production, 60s in development
 
 ---
 
