@@ -41,7 +41,7 @@ const getPrisma = (): PrismaClient => {
 
 // Export a Proxy that forwards all calls to the lazy instance
 export const prisma = new Proxy({} as PrismaClient, {
-  get: (target, prop) => {
+  get: (_target, prop) => {
     return (getPrisma() as any)[prop];
   },
 });
