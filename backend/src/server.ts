@@ -49,12 +49,17 @@ app.notFound((c) => {
 
 const port = parseInt(process.env.PORT || "3000");
 
-console.log(`Starting server on port ${port}...`);
+export { app };
 
-serve({
-  fetch: app.fetch,
-  port,
-});
-
-console.log(`✓ Server running at http://localhost:${port}`);
-console.log(`✓ Environment: ${process.env.NODE_ENV || "development"}`);
+// Only run the server if this file is the main entry point (Local Dev)
+// In Vercel, this file is imported by api/index.ts, so this block won't run.
+import { fileURLToPath } from "url";
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  console.log(`Starting server on port ${port}...`);
+  serve({
+    fetch: app.fetch,
+    port,
+  });
+  console.log(`✓ Server running at http://localhost:${port}`);
+  console.log(`✓ Environment: ${process.env.NODE_ENV || "development"}`);
+}
