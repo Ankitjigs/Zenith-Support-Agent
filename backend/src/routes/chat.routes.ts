@@ -34,26 +34,35 @@ chat.post("/message", async (c) => {
     const sanitizedMessage = sanitizeInput(message);
 
     // Save user message
+    console.log("[TRACE] Saving user message...");
     await conversationService.saveMessage(
       conversationId,
       "user",
       sanitizedMessage
     );
+    console.log("[TRACE] User message saved");
 
     // Get conversation history for context
+    console.log("[TRACE] Fetching conversation history...");
     const history = await conversationService.getFormattedHistory(
       conversationId
     );
+    console.log("[TRACE] History fetched, messages:", history.length);
 
     // Generate AI response using provider manager
+    console.log("[TRACE] Calling LLM provider...");
+    const startTime = Date.now();
     const aiReply = await providerManager.generateReply(
       history,
       sanitizedMessage
     );
+    const elapsed = Date.now() - startTime;
+    console.log(`[TRACE] LLM responded in ${elapsed}ms`);
 
     // Save AI message
-
+    console.log("[TRACE] Saving AI response...");
     await conversationService.saveMessage(conversationId, "ai", aiReply);
+    console.log("[TRACE] AI response saved");
 
     return c.json({
       reply: aiReply,
@@ -61,6 +70,7 @@ chat.post("/message", async (c) => {
     });
   } catch (error: any) {
     console.error("Chat message error:", error);
+    console.error("Error stack:", error.stack);
 
     // Return user-friendly error message
     const errorMessage = error.message || "An unexpected error occurred";

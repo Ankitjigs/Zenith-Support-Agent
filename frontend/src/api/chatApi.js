@@ -26,8 +26,7 @@ export async function sendMessage(message, sessionId = null) {
       throw new Error(error.response.data.error || "Failed to send message");
     } else if (error.request) {
       throw new Error(
-        "No response from server. Please check your connection.",
-        error
+        `No response from server. Please check your connection. ${error}`
       );
     } else {
       // Something happened in setting up the request that triggered an Error
