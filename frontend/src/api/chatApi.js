@@ -20,13 +20,15 @@ export async function sendMessage(message, sessionId = null) {
     return response.data;
   } catch (error) {
     console.error("Send message error: ", error);
+    console.log("Configured API URL:", API_BASE_URL);
 
     if (error.response) {
       throw new Error(error.response.data.error || "Failed to send message");
     } else if (error.request) {
       throw new Error("No response from server. Please check your connection.");
     } else {
-      throw new Error("Failed to send message. Please try again.");
+      // Something happened in setting up the request that triggered an Error
+      throw new Error(`Request setup failed: ${error.message}`);
     }
   }
 }
