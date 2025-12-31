@@ -12,6 +12,7 @@ const chat = new Hono();
 chat.post("/message", async (c) => {
   console.log("🟢 [ENTRY] Handler called, processing request");
   try {
+    console.log("🟢 [ENTRY] About to parse JSON body...");
     const body = await c.req.json();
     console.log("🟢 [ENTRY] Body parsed:", JSON.stringify(body));
     const { message, sessionId } = body;
