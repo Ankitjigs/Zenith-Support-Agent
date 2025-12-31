@@ -3,11 +3,14 @@
 A robust, real-time customer support chat widget powered by a Node.js/TypeScript backend and a React frontend. The agent uses LLMs (Groq/Gemini) to provide contextual answers based on a defined knowledge base.
 
 ## 🌐 Live Demo & Deployment
-**[View Live Deployment Here](YOUR_DEPLOYMENT_URL_HERE)**  
+**[View Live Deployment Here](zenith-support-agent.vercel.app)**  
 *(Replace with your Vercel/Render URL)*
 
 ## 📸 Screenshots
-![Chat Interface](URL_TO_YOUR_SCREENSHOT)
+![Chat Interface](<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/6ed0be14-b5dd-4f4e-b09d-c21b8cdd816e" />
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/6cf19ff8-837b-4a36-a5f6-6453a9ec5777" />
+
+)
 *(Add a screenshot of the chat interface here)*
 
 ## ✨ Key Features
