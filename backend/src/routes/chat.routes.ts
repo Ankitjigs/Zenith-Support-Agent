@@ -13,7 +13,17 @@ chat.post("/message", async (c) => {
   console.log("🟢 [ENTRY] Handler called, processing request");
   try {
     console.log("🟢 [ENTRY] About to parse JSON body...");
-    const body = await c.req.json();
+
+    // Manual body parsing with timeout
+    const bodyText = await Promise.race([
+      c.req.text(),
+      new Promise<string>((_, reject) =>
+        setTimeout(() => reject(new Error("Body read timeout")), 5000)
+      ),
+    ]);
+
+    console.log("🟢 [ENTRY] Body text received, parsing JSON...");
+    const body = JSON.parse(bodyText);
     console.log("🟢 [ENTRY] Body parsed:", JSON.stringify(body));
     const { message, sessionId } = body;
 

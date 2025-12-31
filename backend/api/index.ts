@@ -1,12 +1,12 @@
-import { handle } from "hono/vercel";
+import { getRequestListener } from "@hono/node-server";
 import { app } from "../src/server.js";
 
-console.log("🔵 [API/INDEX] Module loaded (Vercel adapter)");
+console.log("🔵 [API/INDEX] Module loaded");
 
 // Vercel Config
 export const config = {
   runtime: "nodejs",
 };
 
-// Use Hono's native Vercel adapter
-export default handle(app);
+// Export Handler using @hono/node-server
+export default getRequestListener(app.fetch);
