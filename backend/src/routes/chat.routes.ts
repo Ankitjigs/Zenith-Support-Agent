@@ -10,11 +10,8 @@ import {
 const chat = new Hono();
 
 chat.post("/message", async (c) => {
-  console.log("🟢 [ENTRY] Handler called, processing request");
   try {
-    console.log("🟢 [ENTRY] About to parse JSON body...");
     const body = await c.req.json();
-    console.log("🟢 [ENTRY] Body parsed:", JSON.stringify(body));
     const { message, sessionId } = body;
 
     const messageValidation = validateMessage(message);
@@ -36,8 +33,6 @@ chat.post("/message", async (c) => {
     //Input sanitization
     const sanitizedMessage = sanitizeInput(message);
 
-    console.log("[CHECKPOINT 1] Starting message processing");
-
     // Save user message
     await conversationService.saveMessage(
       conversationId,
@@ -45,22 +40,16 @@ chat.post("/message", async (c) => {
       sanitizedMessage
     );
 
-    console.log("[CHECKPOINT 2] User message saved, fetching history");
-
     // Get conversation history for context
     const history = await conversationService.getFormattedHistory(
       conversationId
     );
-
-    console.log("[CHECKPOINT 3] History fetched, calling LLM");
 
     // Generate AI response using provider manager
     const aiReply = await providerManager.generateReply(
       history,
       sanitizedMessage
     );
-
-    console.log("[CHECKPOINT 4] LLM responded");
 
     // Save AI message
 
