@@ -50,6 +50,7 @@ app.notFound((c) => {
 const port = parseInt(process.env.PORT || "3000");
 
 export { app };
+export default app;
 
 // Only run the server if this file is the main entry point (Local Dev)
 // In Vercel, this file is imported by api/index.ts, so this block won't run.
