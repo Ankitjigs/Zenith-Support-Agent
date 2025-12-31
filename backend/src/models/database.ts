@@ -21,9 +21,13 @@ const getPrisma = (): PrismaClient => {
     return prismaInstance;
   }
 
-  // Initialize pg pool for adapter
+  // Initialize pg pool for adapter with timeout configuration
   poolInstance = new Pool({
     connectionString: process.env.DATABASE_URL,
+    max: 1, // Limit pool size for serverless
+    connectionTimeoutMillis: 10000, // 10 second timeout
+    idleTimeoutMillis: 30000,
+    allowExitOnIdle: true, // Important for serverless
   });
 
   const adapter = new PrismaPg(poolInstance);
