@@ -1,6 +1,4 @@
 import { PrismaClient } from "@prisma/client";
-import { PrismaPg } from "@prisma/adapter-pg";
-import { Pool } from "pg";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -8,25 +6,16 @@ dotenv.config();
 const globalForPrisma = global as unknown as { prisma: PrismaClient };
 
 let prismaInstance: PrismaClient | null = null;
-let poolInstance: Pool | null = null;
 
 const getPrisma = (): PrismaClient => {
   if (prismaInstance) return prismaInstance;
-
   if (globalForPrisma.prisma) {
     prismaInstance = globalForPrisma.prisma;
     return prismaInstance;
   }
 
-  // Lazy init pool
-  poolInstance = new Pool({
-    connectionString: process.env.DATABASE_URL,
-  });
-
-  const adapter = new PrismaPg(poolInstance);
-
+  // Standard Prisma Client (Native Engine) is more robust for Node.js
   prismaInstance = new PrismaClient({
-    adapter,
     log:
       process.env.NODE_ENV === "development"
         ? ["query", "error", "warn"]
@@ -48,7 +37,6 @@ export const prisma = new Proxy({} as PrismaClient, {
 
 process.on("beforeExit", async () => {
   if (prismaInstance) await prismaInstance.$disconnect();
-  if (poolInstance) await poolInstance.end();
 });
 
 export default prisma;
