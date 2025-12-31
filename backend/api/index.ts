@@ -33,7 +33,7 @@ export default async function handler(
     const url = new URL(req.url || "/", `http://${req.headers.host}`);
     const webRequest = new Request(url, {
       method: req.method,
-      headers: req.headers as HeadersInit,
+      headers: req.headers as Record<string, string>,
       body: bodyText || undefined,
     });
 
