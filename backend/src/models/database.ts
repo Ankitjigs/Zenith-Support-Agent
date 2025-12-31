@@ -28,7 +28,12 @@ const getPrisma = (): PrismaClient => {
     connectionTimeoutMillis: 10000, // 10 second timeout
     idleTimeoutMillis: 30000,
     allowExitOnIdle: true, // Important for serverless
+    ssl: {
+      rejectUnauthorized: false, // Required for Supabase
+    },
   });
+
+  console.log("Initializing database connection...");
 
   const adapter = new PrismaPg(poolInstance);
 
