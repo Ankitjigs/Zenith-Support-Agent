@@ -102,7 +102,7 @@ The project follows a clean, modular architecture separating concerns between ro
 We use a relational model to link sessions, conversations, and messages.
 
 ```mermaid
-ERDiagram
+erDiagram
     Session ||--|{ Conversation : initiates
     Conversation ||--|{ Message : contains
     
